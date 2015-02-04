@@ -33,7 +33,7 @@ public final class WebServerTest
 			System.out.println("usage: WebServerTest [-p <port>] [-h <host>]");
 			System.exit(0);
 		}
-/*		
+		
 		System.out.println("-----------------------------------------------");
 		System.out.println("Testing methods on valid resource");
 		System.out.println("-----------------------------------------------");
@@ -53,11 +53,11 @@ public final class WebServerTest
 		Tests.httpRequest(host, port,
 			"BLAHA", "/index.html");
 		System.out.println("-----------------------------------------------");
-*/
+
 		Tests.httpRequest(host, port,
 			"GET", "/empty.txt");
 		System.out.println("-----------------------------------------------");
-/*
+
 		Tests.httpRequest(host, port,
 			"HEAD", "/empty.txt");
 		System.out.println("-----------------------------------------------");
@@ -166,7 +166,7 @@ public final class WebServerTest
 			"If-Modified-Since: Mon, 12 Jul 2006 10:19:04 GMT");
 
 
-*/
+
 		System.out.println("-----------------------------------------------");
 		
 	}

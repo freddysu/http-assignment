@@ -14,6 +14,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public final class WebServer {
+
+	/**
+	 * Open a socket for a specific port and wait requests from clients
+	 * Everytime a request is received, a new thread is created for each request.
+	 */
 	public static void main(String argv[]) throws Exception {
 		// Set port number
 		int port = 8080;
@@ -76,7 +81,12 @@ final class HttpRequest implements Runnable {
 		}
 	}
 
-	// Process a HTTP request
+	/**
+	 * Process a HTTP request
+	 * Read the first line of the request and split it with space.
+	 * Then check if there are legal values in the method, resource and HTTP version
+	 * and respond according to the method.
+	 */	
 	private void processRequest() throws Exception {
 		// Get the input and output streams of the socket.
 		InputStream ins = socket.getInputStream();
@@ -94,6 +104,7 @@ final class HttpRequest implements Runnable {
 		//System.out.println("  " + requestLine);
 
 		String[] lineArray = requestLine.split(" ");
+
 
 		if (lineArray.length != 3 || hasEmptyValue(lineArray)) {
 			statusCode = 400;
@@ -127,6 +138,8 @@ final class HttpRequest implements Runnable {
 					sendHeader(method, resource, outs);
 			}
 		}
+
+		socket.shutdownOutput();
 				
 		// Close streams and sockets
 		outs.close();
@@ -134,6 +147,12 @@ final class HttpRequest implements Runnable {
 		socket.close();
 	}
 
+	/**
+	* Check if there is empty value.
+	*
+	* @param input the array to be checked.
+	* @return           true if there are empty values in the array.
+	*/
 	private boolean hasEmptyValue(String[] input){
 		for (int i=0; i < input.length; i++){
 			if (input[i] == "" || input[i].matches("") || input[i] == null){
@@ -147,6 +166,14 @@ final class HttpRequest implements Runnable {
 		return false;
 	}
 
+
+	/**
+	* Check if the method is valid.
+	* Currently support HEAD, GET and POST methods.
+	*
+	* @param method a HTTP method
+	* @return               true if the method exists
+	*/
 	private boolean isValidMethod(String method) {
 		if (method.equals(HTTP_METHOD.HEAD)
 			|| method.equals(HTTP_METHOD.GET)
@@ -157,6 +184,13 @@ final class HttpRequest implements Runnable {
 		}
 	}
 
+	/**
+	* Check if the resource is valid.
+	* If the first character is '/' then it's vaild resource
+	*
+	* @param resource an relative URL indicates the location of the resource
+	* @return                 true if the resouce is valid
+	*/
 	private boolean isValidResource(String resource) {
 		if (resource.charAt(0) == '/') {
 			return true;
@@ -165,6 +199,13 @@ final class HttpRequest implements Runnable {
 		}
 	}
 
+	/**
+	* Check if the resource exists.
+	* If the resource exists, save the length and last modified date.
+	*
+	* @param resource an relative URL indicates the location of the resource
+	* @return true if the resouce exists
+	*/
 	private boolean resourceExist(String resource){
 		resourceName = resource.substring(1);
 		File fileResource = new File(currentDir, resourceName);
@@ -178,6 +219,12 @@ final class HttpRequest implements Runnable {
 		}
 	}
 
+	/**
+	* Return the status line according to the status code.
+	*
+	* @param code status code
+	* @return           the status line
+	*/
 	private String getStatusLine(int code){
 		switch (code){
 			case 200:
@@ -197,12 +244,23 @@ final class HttpRequest implements Runnable {
 		}
 	}
 
+	/**
+	* Get the current date and return in string
+	*
+	* @return           the current date
+	*/
 	private String getDate(){
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d kk:mm:ss yyyy");
 		return sdf.format(cal.getTime());
 	}
 
+	/**
+	* Write a line to the client.
+	*
+	* @param line  the information to be sent
+	* @param outs the output stream to be sent to
+	*/
 	private void writeLine(String line, DataOutputStream outs){
 		try {
 			outs.writeBytes(line);
@@ -211,6 +269,13 @@ final class HttpRequest implements Runnable {
 		}
 	}
 
+	/**
+	* Check if the method and resource are legal and send Header.
+	*
+	* @param method   a HTTP method
+	* @param resource an relative URL indicates the location of the resource
+	* @param outs        the output stream to be sent to
+	*/
 	private void sendHeader(String method, String resource, DataOutputStream outs) {
 		if (method.equals(HTTP_METHOD.POST)) {
 			statusCode = 501;
@@ -250,6 +315,12 @@ final class HttpRequest implements Runnable {
 		
 	}
 
+	/**
+	* Send bytes from the file.
+	*
+	* @param fins   a file input stream
+	* @param outs  the output stream to be sent to
+	*/
 	private static void sendBytes(FileInputStream fins, DataOutputStream outs) throws Exception {
 		// Coopy buffer
 		byte[] buffer = new byte[1024];
@@ -261,6 +332,12 @@ final class HttpRequest implements Runnable {
 		}
 	}
 
+	/**
+	* Set the contentType according to the file name.
+	*
+	* @param fileName the file name
+	* @return                 the content type
+	*/
 	private static String contentType(String fileName) {
 		if (fileName.toLowerCase().endsWith(".htm") || fileName.toLowerCase().endsWith(".html")) {
 			return "text/html";
